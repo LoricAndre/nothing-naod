@@ -22,9 +22,12 @@ import java.util.Calendar
  * fight over the connection. Binding to the system Glyph service is
  * asynchronous, so [showTime] records the request and draws once connected.
  *
- * The connection is kept open while [keepConnected] is set (the shake monitor
- * does this for zero-latency reveals). Otherwise it is released shortly after a
- * reveal finishes so the process can be reclaimed.
+ * The connection is bound once and kept for the process lifetime. To end a
+ * reveal we call [GlyphMatrixManager.closeAppMatrix] only, which hands the
+ * matrix back to the system (so Glyph Toys / AOD keep working) while leaving our
+ * binding ready for the next reveal. We never call `turnOff()` — that disables
+ * the Glyph Matrix at the system level and would require the user to re-enable
+ * it from the quick-settings tile.
  *
  * All work runs on the main thread.
  */
@@ -37,16 +40,12 @@ class GlyphClock private constructor(context: Context) {
     private var manager: GlyphMatrixManager? = null
     private var connected = false
 
-    /** When true the connection is kept open between reveals. */
-    var keepConnected: Boolean = false
-
     private var pendingBrightness = Prefs.DEFAULT_BRIGHTNESS
     private var pendingDurationMs = Prefs.MAX_DURATION_MS.toLong()
     private var hasPending = false
     private var onCleared: (() -> Unit)? = null
 
     private val clearRunnable = Runnable { onClearTimeout() }
-    private val releaseRunnable = Runnable { releaseIfIdle() }
 
     private val callback = object : GlyphMatrixManager.Callback {
         override fun onServiceConnected(name: ComponentName?) {
@@ -87,7 +86,6 @@ class GlyphClock private constructor(context: Context) {
      */
     fun showTime(durationMs: Long, brightness: Int, onCleared: (() -> Unit)? = null) {
         main.post {
-            main.removeCallbacks(releaseRunnable)
             pendingDurationMs = durationMs
             pendingBrightness = brightness
             this.onCleared = onCleared
@@ -147,41 +145,26 @@ class GlyphClock private constructor(context: Context) {
         val cb = onCleared
         onCleared = null
         cb?.invoke()
-        if (!keepConnected) {
-            // Give rapid successive triggers a moment to reuse the connection.
-            main.postDelayed(releaseRunnable, RELEASE_GRACE_MS)
-        }
     }
 
+    /**
+     * Ends the current reveal, returning the matrix to the system. The binding
+     * stays open so the next reveal is immediate. Deliberately does NOT call
+     * turnOff().
+     */
     private fun clear() {
         val gm = manager ?: return
         try {
             gm.closeAppMatrix()
         } catch (t: Throwable) {
-            try {
-                gm.turnOff()
-            } catch (t2: Throwable) {
-                Log.w(TAG, "clear failed", t2)
-            }
+            Log.w(TAG, "closeAppMatrix failed", t)
         }
     }
 
-    /** Releases the connection if it is idle and not pinned by [keepConnected]. */
-    fun releaseIfIdle() {
-        main.post {
-            if (keepConnected || hasPending) return@post
-            release()
-        }
-    }
-
-    private fun release() {
+    /** Explicitly tears down the connection (e.g. on process teardown). */
+    fun release() {
         main.removeCallbacks(clearRunnable)
-        main.removeCallbacks(releaseRunnable)
         clear()
-        try {
-            manager?.turnOff()
-        } catch (_: Throwable) {
-        }
         try {
             manager?.unInit()
         } catch (_: Throwable) {
@@ -216,7 +199,6 @@ class GlyphClock private constructor(context: Context) {
 
     companion object {
         private const val TAG = "GlyphClock"
-        private const val RELEASE_GRACE_MS = 1500L
 
         @Volatile
         private var instance: GlyphClock? = null

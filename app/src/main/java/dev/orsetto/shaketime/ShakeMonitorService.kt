@@ -75,12 +75,12 @@ class ShakeMonitorService : Service() {
 
     override fun onDestroy() {
         stopMonitoring()
-        glyphClock.releaseIfIdle()
         super.onDestroy()
     }
 
     private fun startMonitoring() {
-        glyphClock.keepConnected = true
+        // Bind the Glyph connection now for zero-latency reveals; it stays open
+        // for the process lifetime.
         glyphClock.connect()
         if (!listenerRegistered) {
             val sensor = accelerometer
@@ -99,7 +99,6 @@ class ShakeMonitorService : Service() {
             sensorManager.unregisterListener(detector)
             listenerRegistered = false
         }
-        glyphClock.keepConnected = false
     }
 
     private fun defaultAction(): String =
