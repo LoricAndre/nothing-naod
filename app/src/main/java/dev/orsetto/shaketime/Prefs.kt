@@ -66,7 +66,7 @@ class Prefs(context: Context) {
         /** 4-bit indicator maxes out at 15. */
         const val MAX_NOTIF_COUNT = 15
 
-        const val DEFAULT_SENSITIVITY = 55
+        const val DEFAULT_SENSITIVITY = 65
         const val DEFAULT_DURATION = 40 // ~4.6s within the range below
         const val DEFAULT_BRIGHTNESS = 220
 
@@ -74,7 +74,7 @@ class Prefs(context: Context) {
         const val MAX_DURATION_MS = 10_000
 
         // Acceleration thresholds (m/s^2 above the ~9.8 gravity baseline).
-        const val MIN_THRESHOLD = 7f
-        const val MAX_THRESHOLD = 20f
+        const val MIN_THRESHOLD = 3f
+        const val MAX_THRESHOLD = 16f
     }
 }

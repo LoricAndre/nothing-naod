@@ -86,9 +86,9 @@ class ShakeDetector(
     private companion object {
         const val ALPHA = 0.8f
 
-        // ~ -9.8 when perfectly face-down; -7 allows ~44 degrees of tilt.
-        const val FACE_DOWN_Z = -7f
-        const val FLAT_XY = 5.5f
+        // ~ -9.8 when perfectly face-down; -6 allows ~52 degrees of tilt.
+        const val FACE_DOWN_Z = -6f
+        const val FLAT_XY = 7f
 
         const val REQUIRED_JOLTS = 2
         const val SHAKE_WINDOW_MS = 1200L
