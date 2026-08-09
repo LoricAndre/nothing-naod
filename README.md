@@ -76,7 +76,7 @@ Hours/minutes follow your system 12/24-hour setting.
 - Nothing OS with the Glyph Matrix service, **system build 20250801 or later**
   for app-based matrix control (`setAppMatrixFrame`). Older builds fall back to
   `setMatrixFrame`.
-- Android 14+ (`minSdk 34`, `targetSdk 35`).
+- Android 14+ (`minSdk 34`, `targetSdk 36`).
 
 ## Building
 
