@@ -31,13 +31,19 @@ class ShakeMonitorService : Service() {
     private lateinit var glyphClock: GlyphClock
     private lateinit var sensorManager: SensorManager
     private lateinit var powerManager: PowerManager
-    private var accelerometer: Sensor? = null
     private var listenerRegistered = false
 
-    // Held for the whole monitoring session so the CPU keeps delivering
-    // accelerometer events while the phone is face-down with the screen off.
+    // Held for the whole session in the "Reliable" mode so the CPU keeps
+    // delivering accelerometer events while the screen is off.
     private val monitorWakeLock: PowerManager.WakeLock by lazy {
         powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ShakeTime:monitor")
+            .apply { setReferenceCounted(false) }
+    }
+
+    // Held briefly around each reveal (used by modes without a session-long lock)
+    // so the matrix can be drawn and cleared while the screen is off.
+    private val revealWakeLock: PowerManager.WakeLock by lazy {
+        powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ShakeTime:reveal")
             .apply { setReferenceCounted(false) }
     }
 
@@ -45,9 +51,7 @@ class ShakeMonitorService : Service() {
         ShakeDetector(
             thresholdProvider = { prefs.shakeThreshold },
             cooldownMsProvider = { prefs.durationMs + 1000L },
-            onShakeWhileFaceDown = {
-                glyphClock.showTime(prefs.durationMs, prefs.brightness)
-            },
+            onShakeWhileFaceDown = { reveal() },
         )
     }
 
@@ -57,12 +61,6 @@ class ShakeMonitorService : Service() {
         glyphClock = GlyphClock.getInstance(this)
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        // Prefer a wake-up accelerometer so shakes are detected while the screen
-        // is off (the phone is face-down). Fall back to the standard sensor,
-        // which only delivers events while the device is awake.
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true)
-            ?: sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        Log.i(TAG, "Accelerometer=${accelerometer?.name} wakeUp=${accelerometer?.isWakeUpSensor}")
         createChannel()
     }
 
@@ -91,32 +89,62 @@ class ShakeMonitorService : Service() {
 
     override fun onDestroy() {
         stopMonitoring()
+        if (revealWakeLock.isHeld) revealWakeLock.release()
         super.onDestroy()
     }
 
-    @SuppressLint("WakelockTimeout") // Held only while monitoring is enabled.
-    private fun startMonitoring() {
-        // Bind the Glyph connection now for zero-latency reveals; it stays open
-        // for the process lifetime.
-        glyphClock.connect()
-        if (!listenerRegistered) {
-            val sensor = accelerometer
-            if (sensor == null) {
-                Log.w(TAG, "No accelerometer; cannot monitor")
-                return
-            }
-            detector.reset()
-            // maxReportLatency = 0: no batching, so events arrive immediately.
-            sensorManager.registerListener(
-                detector,
-                sensor,
-                SensorManager.SENSOR_DELAY_GAME,
-                0,
-            )
-            listenerRegistered = true
-            // Keep the CPU awake so events are delivered while the screen is off.
-            if (!monitorWakeLock.isHeld) monitorWakeLock.acquire()
+    /**
+     * Shows the time on a shake. Holds a short wake lock so the reveal can draw
+     * and clear while the screen is off in modes without a session-long lock.
+     */
+    private fun reveal() {
+        val duration = prefs.durationMs
+        revealWakeLock.acquire(duration + WAKELOCK_MARGIN_MS)
+        glyphClock.showTime(duration, prefs.brightness) {
+            if (revealWakeLock.isHeld) revealWakeLock.release()
         }
+    }
+
+    /**
+     * (Re)registers the accelerometer for the current [Prefs.monitorMode]. Safe
+     * to call again to apply a mode change.
+     */
+    @SuppressLint("WakelockTimeout") // Reliable mode holds it only while enabled.
+    private fun startMonitoring() {
+        glyphClock.connect()
+
+        // Re-register so a mode change picks the right sensor.
+        if (listenerRegistered) {
+            sensorManager.unregisterListener(detector)
+            listenerRegistered = false
+        }
+
+        val mode = prefs.monitorMode
+        val sensor = selectSensor(mode)
+        if (sensor == null) {
+            Log.w(TAG, "No accelerometer; cannot monitor")
+            return
+        }
+        Log.i(TAG, "Monitoring mode=$mode sensor=${sensor.name} wakeUp=${sensor.isWakeUpSensor}")
+        detector.reset()
+        // maxReportLatency = 0: no batching, so events arrive immediately.
+        sensorManager.registerListener(detector, sensor, SensorManager.SENSOR_DELAY_GAME, 0)
+        listenerRegistered = true
+
+        // Only the Reliable mode keeps the CPU awake for the whole session.
+        if (mode == Prefs.MODE_RELIABLE) {
+            if (!monitorWakeLock.isHeld) monitorWakeLock.acquire()
+        } else if (monitorWakeLock.isHeld) {
+            monitorWakeLock.release()
+        }
+    }
+
+    /** Wake-up sensor for Balanced mode; standard sensor otherwise. */
+    private fun selectSensor(mode: Int): Sensor? = when (mode) {
+        Prefs.MODE_BALANCED ->
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true)
+                ?: sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        else -> sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     }
 
     private fun stopMonitoring() {
@@ -181,6 +209,7 @@ class ShakeMonitorService : Service() {
         private const val TAG = "ShakeMonitorService"
         private const val CHANNEL_ID = "shake_monitor"
         private const val NOTIF_ID = 1
+        private const val WAKELOCK_MARGIN_MS = 2000L
 
         fun startMonitoring(context: Context) =
             context.startForegroundService(intent(context, ACTION_START_MONITORING))

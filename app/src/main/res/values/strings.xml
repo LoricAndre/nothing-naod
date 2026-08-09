@@ -6,6 +6,11 @@
     <string name="monitor_label">Shake to show time</string>
     <string name="monitor_hint">Runs a background service that watches for a shake while the phone is face-down. Keeps a low-priority notification and uses the accelerometer continuously.</string>
 
+    <string name="mode_title">Detection mode</string>
+    <string name="mode_reliable">Reliable — works on any phone, most battery</string>
+    <string name="mode_balanced">Balanced — lighter; needs a wake-up sensor</string>
+    <string name="mode_screen_on">Screen on only — least battery</string>
+
     <string name="show_now">Show time now (test)</string>
 
     <string name="duration_fmt">Display duration: %.1f s</string>

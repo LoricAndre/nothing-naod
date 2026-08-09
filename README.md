@@ -160,11 +160,15 @@ asked, and trigger it. If nothing appears:
 
 ## Notes & limitations
 
-- To detect a shake while the phone is face-down (screen off), the monitor uses
-  a **wake-up** accelerometer and briefly holds a wake lock to draw the time.
-  This keeps the sensor active while the device sleeps, which uses more battery;
-  turn the toggle off when you don't need it. If the device has no wake-up
-  accelerometer, shake detection only works while the screen is on.
+- **Detection mode** (in the app) trades battery for reliability when the phone
+  is face-down with the screen off:
+  - *Reliable* — holds a wake lock for the whole session so events always arrive
+    while asleep. Works on any phone; uses the most battery.
+  - *Balanced* — uses a wake-up accelerometer with no session wake lock; much
+    lighter, but only detects while asleep if the phone has a wake-up sensor.
+  - *Screen on only* — no wake lock; detects only while the screen is on; least
+    battery.
+  Turn the monitor off entirely when you don't need it.
 - Glyph Toys have display priority over app control — interacting with the Glyph
   Button can override the app's output.
 - The face-down + shake heuristic is tuned conservatively; adjust *sensitivity*

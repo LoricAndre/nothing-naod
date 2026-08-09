@@ -39,6 +39,42 @@
             android:text="@string/monitor_hint"
             android:textSize="13sp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/mode_title"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rg_mode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/rb_reliable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="44dp"
+                android:text="@string/mode_reliable" />
+
+            <RadioButton
+                android:id="@+id/rb_balanced"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="44dp"
+                android:text="@string/mode_balanced" />
+
+            <RadioButton
+                android:id="@+id/rb_screen_on"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="44dp"
+                android:text="@string/mode_screen_on" />
+        </RadioGroup>
+
         <Button
             android:id="@+id/btn_show_now"
             android:layout_width="match_parent"

@@ -18,6 +18,11 @@ class Prefs(context: Context) {
         get() = sp.getBoolean(KEY_MONITORING, false)
         set(value) = sp.edit().putBoolean(KEY_MONITORING, value).apply()
 
+    /** Detection power mode: one of [MODE_RELIABLE], [MODE_BALANCED], [MODE_SCREEN_ON]. */
+    var monitorMode: Int
+        get() = sp.getInt(KEY_MODE, MODE_RELIABLE).coerceIn(MODE_RELIABLE, MODE_SCREEN_ON)
+        set(value) = sp.edit().putInt(KEY_MODE, value.coerceIn(MODE_RELIABLE, MODE_SCREEN_ON)).apply()
+
     /** Slider value 0..100; higher = more sensitive (lower acceleration needed). */
     var sensitivity: Int
         get() = sp.getInt(KEY_SENSITIVITY, DEFAULT_SENSITIVITY).coerceIn(0, 100)
@@ -57,7 +62,17 @@ class Prefs(context: Context) {
 
     companion object {
         private const val KEY_MONITORING = "monitoring"
+        private const val KEY_MODE = "monitor_mode"
         private const val KEY_SENSITIVITY = "sensitivity"
+
+        /** Continuous wake lock; works on any device, most battery. */
+        const val MODE_RELIABLE = 0
+
+        /** Wake-up sensor, no continuous wake lock; lighter on battery. */
+        const val MODE_BALANCED = 1
+
+        /** No wake lock; only detects while the screen is on; least battery. */
+        const val MODE_SCREEN_ON = 2
         private const val KEY_DURATION = "duration"
         private const val KEY_BRIGHTNESS = "brightness"
         private const val KEY_NOTIF_ENABLED = "notif_enabled"

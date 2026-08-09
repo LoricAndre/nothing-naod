@@ -11,6 +11,7 @@ import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
+import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
@@ -43,6 +44,7 @@ class MainActivity : android.app.Activity() {
         brightnessLabel = findViewById(R.id.label_brightness)
 
         setupMonitorSwitch()
+        setupModeSelector()
         setupShowNow()
         setupDuration()
         setupSensitivity()
@@ -67,6 +69,26 @@ class MainActivity : android.app.Activity() {
             } else {
                 ShakeMonitorService.stopMonitoring(this)
             }
+        }
+    }
+
+    private fun setupModeSelector() {
+        val group = findViewById<RadioGroup>(R.id.rg_mode)
+        group.check(
+            when (prefs.monitorMode) {
+                Prefs.MODE_BALANCED -> R.id.rb_balanced
+                Prefs.MODE_SCREEN_ON -> R.id.rb_screen_on
+                else -> R.id.rb_reliable
+            },
+        )
+        group.setOnCheckedChangeListener { _, checkedId ->
+            prefs.monitorMode = when (checkedId) {
+                R.id.rb_balanced -> Prefs.MODE_BALANCED
+                R.id.rb_screen_on -> Prefs.MODE_SCREEN_ON
+                else -> Prefs.MODE_RELIABLE
+            }
+            // Re-apply immediately if the monitor is running.
+            if (prefs.monitoringEnabled) ShakeMonitorService.startMonitoring(this)
         }
     }
 
