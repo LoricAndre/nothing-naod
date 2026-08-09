@@ -31,6 +31,7 @@ import java.util.Calendar
 class GlyphClock private constructor(context: Context) {
 
     private val appContext = context.applicationContext
+    private val prefs = Prefs(appContext)
     private val main = Handler(Looper.getMainLooper())
 
     private var manager: GlyphMatrixManager? = null
@@ -101,11 +102,14 @@ class GlyphClock private constructor(context: Context) {
         try {
             val len = matrixLength()
             val now = Calendar.getInstance()
+            val notifications =
+                if (prefs.notificationIndicatorEnabled) prefs.notificationCount else -1
             val bmp = TimeMatrixRenderer.render(
                 hour24 = now.get(Calendar.HOUR_OF_DAY),
                 minute = now.get(Calendar.MINUTE),
                 use24h = DateFormat.is24HourFormat(appContext),
                 matrixLen = len,
+                notifications = notifications,
             )
             val obj = GlyphMatrixObject.Builder()
                 .setImageSource(bmp)

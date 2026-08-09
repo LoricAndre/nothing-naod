@@ -98,6 +98,20 @@
             </intent-filter>
         </receiver>
 
+        <!--
+            Counts notifications for the Glyph binary indicator. Requires the
+            user to grant Notification access in system settings.
+        -->
+        <service
+            android:name=".NotificationCountService"
+            android:label="@string/notif_listener_label"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
         <service
             android:name=".ShakeMonitorService"
             android:exported="false"

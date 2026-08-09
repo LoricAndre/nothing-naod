@@ -1,12 +1,15 @@
 package dev.orsetto.shaketime
 
 import android.Manifest
+import android.app.NotificationManager
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Switch
@@ -23,6 +26,7 @@ class MainActivity : android.app.Activity() {
     private lateinit var prefs: Prefs
 
     private lateinit var monitorSwitch: Switch
+    private lateinit var notifSwitch: Switch
     private lateinit var durationLabel: TextView
     private lateinit var sensitivityLabel: TextView
     private lateinit var brightnessLabel: TextView
@@ -33,6 +37,7 @@ class MainActivity : android.app.Activity() {
         prefs = Prefs(this)
 
         monitorSwitch = findViewById(R.id.switch_monitor)
+        notifSwitch = findViewById(R.id.switch_notif)
         durationLabel = findViewById(R.id.label_duration)
         sensitivityLabel = findViewById(R.id.label_sensitivity)
         brightnessLabel = findViewById(R.id.label_brightness)
@@ -42,12 +47,15 @@ class MainActivity : android.app.Activity() {
         setupDuration()
         setupSensitivity()
         setupBrightness()
+        setupNotificationIndicator()
         setupPinShortcut()
     }
 
     override fun onResume() {
         super.onResume()
         monitorSwitch.isChecked = prefs.monitoringEnabled
+        // Access may have been granted/revoked in system settings while away.
+        notifSwitch.isChecked = prefs.notificationIndicatorEnabled && isNotificationAccessGranted()
     }
 
     private fun setupMonitorSwitch() {
@@ -104,6 +112,34 @@ class MainActivity : android.app.Activity() {
                 updateBrightnessLabel()
             }
         })
+    }
+
+    private fun setupNotificationIndicator() {
+        notifSwitch.isChecked = prefs.notificationIndicatorEnabled && isNotificationAccessGranted()
+        notifSwitch.setOnCheckedChangeListener { _, checked ->
+            if (checked && !isNotificationAccessGranted()) {
+                Toast.makeText(this, R.string.notif_access_needed, Toast.LENGTH_LONG).show()
+                openNotificationAccessSettings()
+                notifSwitch.isChecked = false
+                prefs.notificationIndicatorEnabled = false
+                return@setOnCheckedChangeListener
+            }
+            prefs.notificationIndicatorEnabled = checked
+        }
+        findViewById<Button>(R.id.btn_notif_access).setOnClickListener {
+            openNotificationAccessSettings()
+        }
+    }
+
+    private fun isNotificationAccessGranted(): Boolean {
+        val nm = getSystemService(NotificationManager::class.java) ?: return false
+        return nm.isNotificationListenerAccessGranted(
+            ComponentName(this, NotificationCountService::class.java),
+        )
+    }
+
+    private fun openNotificationAccessSettings() {
+        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
     }
 
     private fun setupPinShortcut() {

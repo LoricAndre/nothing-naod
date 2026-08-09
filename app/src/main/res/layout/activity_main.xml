@@ -85,6 +85,28 @@
             android:layout_height="wrap_content"
             android:max="255" />
 
+        <Switch
+            android:id="@+id/switch_notif"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:minHeight="48dp"
+            android:text="@string/notif_count_label"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/notif_count_hint"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btn_notif_access"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/notif_access" />
+
         <Button
             android:id="@+id/btn_pin_shortcut"
             android:layout_width="match_parent"

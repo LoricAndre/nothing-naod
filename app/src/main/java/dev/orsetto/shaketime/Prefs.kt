@@ -33,6 +33,16 @@ class Prefs(context: Context) {
         get() = sp.getInt(KEY_BRIGHTNESS, DEFAULT_BRIGHTNESS).coerceIn(1, 255)
         set(value) = sp.edit().putInt(KEY_BRIGHTNESS, value.coerceIn(1, 255)).apply()
 
+    /** Whether to overlay the notification count as a binary indicator. */
+    var notificationIndicatorEnabled: Boolean
+        get() = sp.getBoolean(KEY_NOTIF_ENABLED, false)
+        set(value) = sp.edit().putBoolean(KEY_NOTIF_ENABLED, value).apply()
+
+    /** Last known notification count, 0..[MAX_NOTIF_COUNT]. */
+    var notificationCount: Int
+        get() = sp.getInt(KEY_NOTIF_COUNT, 0).coerceIn(0, MAX_NOTIF_COUNT)
+        set(value) = sp.edit().putInt(KEY_NOTIF_COUNT, value.coerceIn(0, MAX_NOTIF_COUNT)).apply()
+
     /** How long to keep the time on the matrix, in milliseconds. */
     val durationMs: Long
         get() = (MIN_DURATION_MS + (MAX_DURATION_MS - MIN_DURATION_MS) *
@@ -50,6 +60,11 @@ class Prefs(context: Context) {
         private const val KEY_SENSITIVITY = "sensitivity"
         private const val KEY_DURATION = "duration"
         private const val KEY_BRIGHTNESS = "brightness"
+        private const val KEY_NOTIF_ENABLED = "notif_enabled"
+        private const val KEY_NOTIF_COUNT = "notif_count"
+
+        /** 4-bit indicator maxes out at 15. */
+        const val MAX_NOTIF_COUNT = 15
 
         const val DEFAULT_SENSITIVITY = 55
         const val DEFAULT_DURATION = 40 // ~4.6s within the range below

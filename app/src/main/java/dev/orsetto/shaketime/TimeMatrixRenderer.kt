@@ -36,8 +36,16 @@ object TimeMatrixRenderer {
      * @param minute minute 0..59
      * @param use24h whether to show 24h time; otherwise 12h (leading zero kept)
      * @param matrixLen side length of the (square) matrix in LEDs
+     * @param notifications notification count to show as a 4-bit indicator in the
+     *   rightmost column (top pixel = 8, bottom = 1); negative to hide it
      */
-    fun render(hour24: Int, minute: Int, use24h: Boolean, matrixLen: Int): Bitmap {
+    fun render(
+        hour24: Int,
+        minute: Int,
+        use24h: Boolean,
+        matrixLen: Int,
+        notifications: Int = -1,
+    ): Bitmap {
         val len = matrixLen.coerceAtLeast(GLYPH_H)
         val bmp = Bitmap.createBitmap(len, len, Bitmap.Config.ARGB_8888)
         bmp.eraseColor(Color.BLACK)
@@ -59,7 +67,27 @@ object TimeMatrixRenderer {
 
         drawPair(bmp, hh, startX, topY, scale, gap, digitW)
         drawPair(bmp, mm, startX, topY + digitH + gap, scale, gap, digitW)
+
+        if (notifications >= 0) drawNotificationBits(bmp, len, notifications)
         return bmp
+    }
+
+    /**
+     * Draws a 4-bit binary counter down the rightmost column: four evenly spaced
+     * dots, top = most significant bit (value 8), bottom = least significant
+     * (value 1). Only lit bits are drawn.
+     */
+    private fun drawNotificationBits(bmp: Bitmap, len: Int, count: Int) {
+        val value = count.coerceIn(0, 15)
+        val x = len - 1
+        val spacing = (len / 4).coerceAtLeast(1)
+        val offset = spacing / 2
+        for (i in 0 until 4) {
+            val bit = 3 - i // top dot is the most significant bit
+            if ((value shr bit) and 1 == 0) continue
+            val y = offset + i * spacing
+            if (y in 0 until len) bmp.setPixel(x, y, Color.WHITE)
+        }
     }
 
     private fun drawPair(
