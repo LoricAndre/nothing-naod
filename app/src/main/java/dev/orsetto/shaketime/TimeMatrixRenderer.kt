@@ -31,6 +31,9 @@ object TimeMatrixRenderer {
     private const val GLYPH_W = 3
     private const val GLYPH_H = 5
 
+    // Dim grey for unlit notification bits so all four positions stay visible.
+    private val DIM_BIT = Color.rgb(28, 28, 28)
+
     /**
      * @param hour24 hour of day 0..23
      * @param minute minute 0..59
@@ -75,7 +78,8 @@ object TimeMatrixRenderer {
     /**
      * Draws a 4-bit binary counter down the rightmost column: four evenly spaced
      * dots, top = most significant bit (value 8), bottom = least significant
-     * (value 1). Only lit bits are drawn.
+     * (value 1). Set bits are full brightness; unset bits are drawn dim so all
+     * four positions remain visible.
      */
     private fun drawNotificationBits(bmp: Bitmap, len: Int, count: Int) {
         val value = count.coerceIn(0, 15)
@@ -84,9 +88,9 @@ object TimeMatrixRenderer {
         val offset = spacing / 2
         for (i in 0 until 4) {
             val bit = 3 - i // top dot is the most significant bit
-            if ((value shr bit) and 1 == 0) continue
+            val on = (value shr bit) and 1 == 1
             val y = offset + i * spacing
-            if (y in 0 until len) bmp.setPixel(x, y, Color.WHITE)
+            if (y in 0 until len) bmp.setPixel(x, y, if (on) Color.WHITE else DIM_BIT)
         }
     }
 
