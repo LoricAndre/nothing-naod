@@ -11,6 +11,7 @@ import android.content.pm.ServiceInfo
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
 
 /**
@@ -28,16 +29,20 @@ class ShakeMonitorService : Service() {
     private lateinit var prefs: Prefs
     private lateinit var glyphClock: GlyphClock
     private lateinit var sensorManager: SensorManager
+    private lateinit var powerManager: PowerManager
     private var accelerometer: Sensor? = null
     private var listenerRegistered = false
+
+    private val wakeLock: PowerManager.WakeLock by lazy {
+        powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ShakeTime:reveal")
+            .apply { setReferenceCounted(false) }
+    }
 
     private val detector by lazy {
         ShakeDetector(
             thresholdProvider = { prefs.shakeThreshold },
             cooldownMsProvider = { prefs.durationMs + 1000L },
-            onShakeWhileFaceDown = {
-                glyphClock.showTime(prefs.durationMs, prefs.brightness)
-            },
+            onShakeWhileFaceDown = { reveal() },
         )
     }
 
@@ -46,7 +51,12 @@ class ShakeMonitorService : Service() {
         prefs = Prefs(this)
         glyphClock = GlyphClock.getInstance(this)
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        // Prefer a wake-up accelerometer so shakes are detected while the screen
+        // is off (the phone is face-down). Fall back to the standard sensor,
+        // which only delivers events while the device is awake.
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true)
+            ?: sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         createChannel()
     }
 
@@ -75,7 +85,20 @@ class ShakeMonitorService : Service() {
 
     override fun onDestroy() {
         stopMonitoring()
+        if (wakeLock.isHeld) wakeLock.release()
         super.onDestroy()
+    }
+
+    /**
+     * Shows the time in response to a shake. Holds a short wake lock so the CPU
+     * stays awake to draw and then clear the matrix while the screen is off.
+     */
+    private fun reveal() {
+        val duration = prefs.durationMs
+        wakeLock.acquire(duration + WAKELOCK_MARGIN_MS)
+        glyphClock.showTime(duration, prefs.brightness) {
+            if (wakeLock.isHeld) wakeLock.release()
+        }
     }
 
     private fun startMonitoring() {
@@ -89,7 +112,14 @@ class ShakeMonitorService : Service() {
                 return
             }
             detector.reset()
-            sensorManager.registerListener(detector, sensor, SensorManager.SENSOR_DELAY_GAME)
+            // maxReportLatency = 0: no batching, so wake-up events arrive
+            // immediately instead of being buffered until the next wake.
+            sensorManager.registerListener(
+                detector,
+                sensor,
+                SensorManager.SENSOR_DELAY_GAME,
+                0,
+            )
             listenerRegistered = true
         }
     }
@@ -155,6 +185,7 @@ class ShakeMonitorService : Service() {
         private const val TAG = "ShakeMonitorService"
         private const val CHANNEL_ID = "shake_monitor"
         private const val NOTIF_ID = 1
+        private const val WAKELOCK_MARGIN_MS = 2000L
 
         fun startMonitoring(context: Context) =
             context.startForegroundService(intent(context, ACTION_START_MONITORING))

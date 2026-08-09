@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+    <!-- Keep the CPU awake briefly to draw the time on a shake while asleep. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- This app is only meaningful on a device with a Glyph Matrix. -->
     <uses-feature
