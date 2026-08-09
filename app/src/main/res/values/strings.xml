@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Shake Time</string>
+    <string name="tagline">Shake your phone while it lies face-down to flash the time on the Glyph Matrix.</string>
+
+    <string name="monitor_label">Shake to show time</string>
+    <string name="monitor_hint">Runs a background service that watches for a shake while the phone is face-down. Keeps a low-priority notification and uses the accelerometer continuously.</string>
+
+    <string name="show_now">Show time now (test)</string>
+
+    <string name="duration_fmt">Display duration: %.1f s</string>
+    <string name="sensitivity_fmt">Shake sensitivity: %1$d / 100</string>
+    <string name="brightness_fmt">Brightness: %1$d / 255</string>
+
+    <string name="add_shortcut">Add home-screen shortcut</string>
+    <string name="shortcut_short">Show time</string>
+    <string name="shortcut_long">Show time on Glyph</string>
+    <string name="pin_unsupported">This launcher does not support pinned shortcuts.</string>
+
+    <string name="shown_toast">Showing time on the Glyph Matrix</string>
+
+    <string name="automation_title">Automation (Tasker, etc.)</string>
+    <string name="automation_body">Trigger a reveal from any automation app.\n\nBroadcast (Tasker → Send Intent):\n  Action: dev.orsetto.shaketime.action.SHOW_TIME\n  Target: Broadcast Receiver\n\nOr launch the activity:\n  am start -n dev.orsetto.shaketime/.ShowTimeActivity\n\nOptional long extra \"duration_ms\" overrides the duration.</string>
+
+    <string name="channel_name">Shake monitoring</string>
+    <string name="channel_desc">Ongoing notification while watching for shakes.</string>
+    <string name="notif_title">Shake Time</string>
+    <string name="notif_text_on">Watching for a shake while face-down</string>
+    <string name="notif_text_off">Idle</string>
+    <string name="action_stop">Stop</string>
+</resources>

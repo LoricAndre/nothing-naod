@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="show_time"
+        android:enabled="true"
+        android:icon="@drawable/ic_shake_time"
+        android:shortcutShortLabel="@string/shortcut_short"
+        android:shortcutLongLabel="@string/shortcut_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="dev.orsetto.shaketime"
+            android:targetClass="dev.orsetto.shaketime.ShowTimeActivity" />
+    </shortcut>
+</shortcuts>

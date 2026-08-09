@@ -1,0 +1,65 @@
+package dev.orsetto.shaketime
+
+import android.content.Context
+
+/**
+ * Thin wrapper over [android.content.SharedPreferences] holding user settings.
+ *
+ * Sensitivity and duration are stored as 0..100 slider values and mapped to
+ * concrete units on read so the UI and the detector never disagree.
+ */
+class Prefs(context: Context) {
+
+    private val sp = context.applicationContext
+        .getSharedPreferences("shake_time", Context.MODE_PRIVATE)
+
+    /** Whether the background shake monitor should be running. */
+    var monitoringEnabled: Boolean
+        get() = sp.getBoolean(KEY_MONITORING, false)
+        set(value) = sp.edit().putBoolean(KEY_MONITORING, value).apply()
+
+    /** Slider value 0..100; higher = more sensitive (lower acceleration needed). */
+    var sensitivity: Int
+        get() = sp.getInt(KEY_SENSITIVITY, DEFAULT_SENSITIVITY).coerceIn(0, 100)
+        set(value) = sp.edit().putInt(KEY_SENSITIVITY, value.coerceIn(0, 100)).apply()
+
+    /** Slider value 0..100 mapped to [MIN_DURATION_MS]..[MAX_DURATION_MS]. */
+    var durationSlider: Int
+        get() = sp.getInt(KEY_DURATION, DEFAULT_DURATION).coerceIn(0, 100)
+        set(value) = sp.edit().putInt(KEY_DURATION, value.coerceIn(0, 100)).apply()
+
+    /** LED brightness 1..255. */
+    var brightness: Int
+        get() = sp.getInt(KEY_BRIGHTNESS, DEFAULT_BRIGHTNESS).coerceIn(1, 255)
+        set(value) = sp.edit().putInt(KEY_BRIGHTNESS, value.coerceIn(1, 255)).apply()
+
+    /** How long to keep the time on the matrix, in milliseconds. */
+    val durationMs: Long
+        get() = (MIN_DURATION_MS + (MAX_DURATION_MS - MIN_DURATION_MS) *
+            durationSlider / 100).toLong()
+
+    /**
+     * Peak linear-acceleration (m/s^2 above gravity) required to count as a
+     * shake jolt. High sensitivity -> low threshold.
+     */
+    val shakeThreshold: Float
+        get() = MAX_THRESHOLD - (MAX_THRESHOLD - MIN_THRESHOLD) * sensitivity / 100f
+
+    companion object {
+        private const val KEY_MONITORING = "monitoring"
+        private const val KEY_SENSITIVITY = "sensitivity"
+        private const val KEY_DURATION = "duration"
+        private const val KEY_BRIGHTNESS = "brightness"
+
+        const val DEFAULT_SENSITIVITY = 55
+        const val DEFAULT_DURATION = 40 // ~4.6s within the range below
+        const val DEFAULT_BRIGHTNESS = 220
+
+        const val MIN_DURATION_MS = 1500
+        const val MAX_DURATION_MS = 10_000
+
+        // Acceleration thresholds (m/s^2 above the ~9.8 gravity baseline).
+        const val MIN_THRESHOLD = 7f
+        const val MAX_THRESHOLD = 20f
+    }
+}

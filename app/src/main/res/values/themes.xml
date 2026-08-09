@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ShakeTime" parent="@android:style/Theme.DeviceDefault.DayNight" />
+
+    <!-- Used by the invisible trampoline activity: never draws a window. -->
+    <style name="Theme.ShakeTime.Invisible" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowNoDisplay">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>

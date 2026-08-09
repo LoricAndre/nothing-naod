@@ -1,0 +1,14 @@
+# Built output
+*.iml
+.gradle/
+build/
+/local.properties
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Nothing Glyph Matrix SDK: closed-source, not redistributable.
+# Fetched at build time (see app/build.gradle.kts / scripts/fetch-glyph-sdk.sh).
+/app/libs/*.aar
