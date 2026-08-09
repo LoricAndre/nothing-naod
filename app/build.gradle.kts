@@ -2,8 +2,9 @@ import java.net.URI
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    // AGP 9 provides built-in Kotlin support; the standalone
+    // org.jetbrains.kotlin.android plugin must NOT be applied.
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
 }
 
 android {
