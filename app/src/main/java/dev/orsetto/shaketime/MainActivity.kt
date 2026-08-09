@@ -3,16 +3,15 @@ package dev.orsetto.shaketime
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
-import androidx.core.content.pm.ShortcutInfoCompat
-import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.drawable.IconCompat
 
 /**
  * Settings screen: toggle background monitoring, tune duration / sensitivity /
@@ -109,19 +108,20 @@ class MainActivity : android.app.Activity() {
 
     private fun setupPinShortcut() {
         findViewById<Button>(R.id.btn_pin_shortcut).setOnClickListener {
-            if (!ShortcutManagerCompat.isRequestPinShortcutSupported(this)) {
+            val sm = getSystemService(ShortcutManager::class.java)
+            if (sm == null || !sm.isRequestPinShortcutSupported) {
                 Toast.makeText(this, R.string.pin_unsupported, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
             val intent = Intent(this, ShowTimeActivity::class.java)
                 .setAction(Intent.ACTION_VIEW)
-            val shortcut = ShortcutInfoCompat.Builder(this, "show_time")
+            val shortcut = ShortcutInfo.Builder(this, "show_time")
                 .setShortLabel(getString(R.string.shortcut_short))
                 .setLongLabel(getString(R.string.shortcut_long))
-                .setIcon(IconCompat.createWithResource(this, R.drawable.ic_shake_time))
+                .setIcon(Icon.createWithResource(this, R.drawable.ic_shake_time))
                 .setIntent(intent)
                 .build()
-            ShortcutManagerCompat.requestPinShortcut(this, shortcut, null)
+            sm.requestPinShortcut(shortcut, null)
         }
     }
 
@@ -138,7 +138,7 @@ class MainActivity : android.app.Activity() {
     }
 
     private fun ensureNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
             != PackageManager.PERMISSION_GRANTED
         ) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_NOTIF)

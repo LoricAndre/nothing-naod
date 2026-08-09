@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "dev.orsetto.shaketime"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.orsetto.shaketime"
@@ -103,6 +103,9 @@ val downloadGlyphSdk = tasks.register("downloadGlyphSdk") {
 tasks.named("preBuild") { dependsOn(downloadGlyphSdk) }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
+    // No AndroidX dependency: the few helpers we need (ShortcutManager, Icon,
+    // permission checks) are available directly on the platform at minSdk 34.
+    // This also avoids pulling androidx.core versions that require an
+    // unreleased compileSdk.
     implementation(files(glyphSdkAar.asFile))
 }
