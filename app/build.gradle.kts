@@ -15,7 +15,9 @@ android {
         applicationId = "dev.orsetto.shaketime"
         minSdk = 34
         targetSdk = 36
-        versionCode = 1
+        // Monotonic version code from the CI run number so each build installs
+        // as an update over the previous one; falls back to 1 for local builds.
+        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionName = "1.0"
     }
 

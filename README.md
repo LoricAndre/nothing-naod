@@ -103,22 +103,37 @@ If your build machine is offline, fetch it ahead of time:
 
 ## Continuous integration & releases
 
-GitHub Actions (`.github/workflows/build.yml`) builds a debug APK on every push
-and pull request and uploads it as a workflow artifact (`shake-time-debug`).
+GitHub Actions (`.github/workflows/build.yml`) builds a release APK on every
+push and pull request and uploads it as a workflow artifact
+(`shake-time-release`). Pushing a tag starting with `v` additionally attaches
+the APK to a GitHub Release.
 
-To cut a release, push a tag starting with `v`:
+### Signing (install updates without reinstalling)
 
-```sh
-git tag v1.0.0 && git push origin v1.0.0
-```
+Android only lets an APK update an installed one when both share the **same
+signing key**. Configure a stable key once and every build installs in place:
 
-That builds `assembleRelease` and attaches the APK to a GitHub Release.
+1. Create a keystore (once):
+   ```sh
+   keytool -genkey -v -keystore shake-time.jks -alias shaketime \
+     -keyalg RSA -keysize 2048 -validity 10000
+   ```
+2. Base64-encode it:
+   ```sh
+   base64 -w0 shake-time.jks   # macOS: base64 -i shake-time.jks
+   ```
+3. In the repo, add **Settings → Secrets and variables → Actions** secrets:
+   - `KEYSTORE_BASE64` – the base64 string from step 2
+   - `KEYSTORE_PASSWORD` – the keystore password
+   - `KEY_ALIAS` – `shaketime` (or your alias)
+   - `KEY_PASSWORD` – the key password
 
-- With **no secrets configured**, the release APK is signed with the debug key
-  so it is still installable.
-- For a properly signed release, add these repository secrets and the workflow
-  will use them automatically: `KEYSTORE_BASE64` (base64 of your keystore),
-  `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
+CI signs the release APK with that key automatically. With **no secrets set**,
+the release APK falls back to an ephemeral debug key (installable, but each build
+has a different signature, so it won't update over a previous install).
+
+Keep the `shake-time.jks` file safe and out of git — losing it means you can no
+longer ship updates over an existing install.
 
 Dependabot (`.github/dependabot.yml`) opens weekly PRs for Gradle dependencies
 and GitHub Actions.
