@@ -131,7 +131,11 @@ signing key**. Configure a stable key once and every build installs in place:
    - `KEYSTORE_BASE64` – the base64 string from step 2
    - `KEYSTORE_PASSWORD` – the keystore password
    - `KEY_ALIAS` – `shaketime` (or your alias)
-   - `KEY_PASSWORD` – the key password
+   - `KEY_PASSWORD` – *optional.* `keytool` creates a **PKCS12** keystore, where
+     the key uses the **same password as the keystore**, so you can omit this
+     secret. If you do set it, it **must equal** `KEYSTORE_PASSWORD` — a
+     different value fails signing with "Get Key failed: Given final block not
+     properly padded."
 
 CI signs the release APK with that key automatically. With **no secrets set**,
 the release APK falls back to an ephemeral debug key (installable, but each build

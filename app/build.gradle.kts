@@ -30,7 +30,11 @@ android {
                 storeFile = file(storeFilePath)
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
+                // keytool creates a PKCS12 keystore by default, where the key
+                // shares the store password. Fall back to it when KEY_PASSWORD is
+                // unset so a single password is enough.
+                keyPassword = System.getenv("KEY_PASSWORD")?.takeIf { it.isNotBlank() }
+                    ?: System.getenv("KEYSTORE_PASSWORD")
             }
         }
     }
