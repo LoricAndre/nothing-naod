@@ -56,6 +56,24 @@
             android:theme="@style/Theme.ShakeTime.Invisible" />
 
         <!--
+            A second launcher entry that points at the trampoline. It gives a
+            standalone "Show Time" icon that appears in launchers and, crucially,
+            in automation apps' app pickers (e.g. Tasker → Launch App), so the
+            reveal can be triggered with a single tap and no intent editing.
+        -->
+        <activity-alias
+            android:name=".ShowTimeShortcut"
+            android:targetActivity=".ShowTimeActivity"
+            android:exported="true"
+            android:icon="@drawable/ic_shake_time"
+            android:label="@string/shortcut_launch_label">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!--
             Broadcast entry point for automation apps. From Tasker use
             "Send Intent" (Broadcast) with action:
               dev.orsetto.shaketime.action.SHOW_TIME

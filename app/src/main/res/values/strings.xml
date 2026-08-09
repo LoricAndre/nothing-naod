@@ -13,6 +13,7 @@
     <string name="brightness_fmt">Brightness: %1$d / 255</string>
 
     <string name="add_shortcut">Add home-screen shortcut</string>
+    <string name="shortcut_launch_label">Show Time</string>
     <string name="shortcut_short">Show time</string>
     <string name="shortcut_long">Show time on Glyph</string>
     <string name="pin_unsupported">This launcher does not support pinned shortcuts.</string>

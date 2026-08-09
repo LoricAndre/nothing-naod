@@ -27,9 +27,19 @@ the monitor and keeps a low-priority notification (required for a foreground
 service). It restarts after reboot if left enabled.
 
 **2. Launcher shortcut.** Long-press the app icon → *Show time*, or tap
-*"Add home-screen shortcut"* in the app to pin it.
+*"Add home-screen shortcut"* in the app to pin it. There is also a standalone
+**"Show Time"** launcher icon (an activity-alias) you can drop on your home
+screen for one-tap access.
 
-**3. Automation apps / adb.** Two equivalent entry points:
+**3. Automation apps (easiest).** The **"Show Time"** entry appears in
+automation apps' app pickers, so no intent editing is needed:
+
+- **Tasker** → *Add Action* → *App* → *Launch App* → pick **Show Time**.
+- Most other automation apps (MacroDroid, Automate, launchers) list it the
+  same way as a launchable app/shortcut.
+
+**4. Automation apps / adb (explicit intents).** If you prefer sending an
+intent directly:
 
 - Broadcast (recommended for Tasker → *Send Intent*, target *Broadcast Receiver*):
 
