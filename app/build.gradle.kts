@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "dev.orsetto.shaketime"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "dev.orsetto.shaketime"
@@ -71,7 +71,7 @@ kotlin {
 // ---------------------------------------------------------------------------
 val glyphSdkAar = layout.projectDirectory.file("libs/glyph-matrix-sdk-2.0.aar")
 
-val downloadGlyphSdk by tasks.registering {
+val downloadGlyphSdk = tasks.register("downloadGlyphSdk") {
     description = "Downloads the Nothing Glyph Matrix SDK AAR from the official repository."
     group = "build setup"
     val out = glyphSdkAar.asFile
