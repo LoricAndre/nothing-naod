@@ -1,7 +1,9 @@
 package dev.orsetto.shaketime
 
 import android.app.Notification
+import android.app.NotificationManager
 import android.service.notification.NotificationListenerService
+import android.service.notification.NotificationListenerService.Ranking
 import android.service.notification.StatusBarNotification
 import android.util.Log
 
@@ -10,8 +12,10 @@ import android.util.Log
  * (clamped to [Prefs.MAX_NOTIF_COUNT]) for the Glyph indicator to read.
  *
  * Requires the user to grant "Notification access" in system settings. Ongoing
- * notifications (including this app's own foreground-service notification) and
- * group summaries are excluded so the count reflects real, dismissable items.
+ * notifications (including this app's own foreground-service notification),
+ * group summaries, and silent notifications (importance below
+ * [NotificationManager.IMPORTANCE_DEFAULT]) are excluded so the count reflects
+ * real, alerting, dismissable items.
  */
 class NotificationCountService : NotificationListenerService() {
 
@@ -31,11 +35,18 @@ class NotificationCountService : NotificationListenerService() {
             return
         } ?: return
 
+        val rankingMap = currentRanking
+        val ranking = Ranking()
+
         var count = 0
         for (sbn in active) {
             val flags = sbn.notification.flags
             if (flags and Notification.FLAG_ONGOING_EVENT != 0) continue
             if (flags and Notification.FLAG_GROUP_SUMMARY != 0) continue
+            // Skip silent notifications (importance below DEFAULT: LOW/MIN).
+            if (rankingMap != null && rankingMap.getRanking(sbn.key, ranking)) {
+                if (ranking.importance < NotificationManager.IMPORTANCE_DEFAULT) continue
+            }
             count++
         }
         prefs.notificationCount = count

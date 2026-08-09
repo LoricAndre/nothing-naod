@@ -70,7 +70,8 @@ e.g. `--el duration_ms 3000`.
   right-hand pixels as a binary counter (top = 8, then 4, 2, bottom = 1; capped
   at 15). Set bits are full brightness; unset bits stay dimly lit so all four
   positions are visible. Requires granting Notification access; ongoing
-  notifications (including this app's own) and group summaries are excluded.
+  notifications (including this app's own), group summaries, and silent
+  (low-importance) notifications are excluded.
 
 Hours/minutes follow your system 12/24-hour setting.
 
