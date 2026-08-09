@@ -2,6 +2,8 @@ package dev.orsetto.shaketime
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import kotlin.math.floor
+import kotlin.math.sqrt
 
 /**
  * Renders the current time into a square [Bitmap] sized to the Glyph Matrix.
@@ -76,20 +78,34 @@ object TimeMatrixRenderer {
     }
 
     /**
-     * Draws a 4-bit binary counter down the rightmost column: four evenly spaced
-     * dots, top = most significant bit (value 8), bottom = least significant
-     * (value 1). Set bits are full brightness; unset bits are drawn dim so all
-     * four positions remain visible.
+     * Draws a 4-bit binary counter as four vertically-spaced dots on the right,
+     * top = most significant bit (value 8), bottom = least significant (value 1).
+     * Set bits are full brightness; unset bits are drawn dim so all four
+     * positions stay visible.
+     *
+     * The Glyph Matrix is a disc, so the extreme corners/edges of the square
+     * grid have no physical LED. The dots are placed at the right-most column
+     * whose four positions still fall inside the lit disc (same distance from
+     * centre as the clock digits' corners), one column clear of the digits.
      */
     private fun drawNotificationBits(bmp: Bitmap, len: Int, count: Int) {
         val value = count.coerceIn(0, 15)
-        val x = len - 1
-        val spacing = (len / 4).coerceAtLeast(1)
-        val offset = spacing / 2
+        val center = (len - 1) / 2
+        val half = (len / 12).coerceAtLeast(1) // half the gap between dots
+        val rowOffsets = intArrayOf(-3, -1, 1, 3) // symmetric around centre
+        val extreme = 3 * half // furthest dot from centre, vertically
+
+        // Largest horizontal offset that keeps the top/bottom dots inside the disc.
+        val radius = len / 2.0
+        val maxDx = floor(sqrt(radius * radius - (extreme * extreme).toDouble()) - 0.5)
+            .toInt()
+            .coerceIn(1, center)
+        val x = (center + maxDx).coerceIn(0, len - 1)
+
         for (i in 0 until 4) {
             val bit = 3 - i // top dot is the most significant bit
             val on = (value shr bit) and 1 == 1
-            val y = offset + i * spacing
+            val y = center + rowOffsets[i] * half
             if (y in 0 until len) bmp.setPixel(x, y, if (on) Color.WHITE else DIM_BIT)
         }
     }
