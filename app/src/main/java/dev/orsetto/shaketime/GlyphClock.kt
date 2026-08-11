@@ -40,7 +40,6 @@ class GlyphClock private constructor(context: Context) {
     private var manager: GlyphMatrixManager? = null
     private var connected = false
 
-    private var pendingBrightness = Prefs.DEFAULT_BRIGHTNESS
     private var pendingDurationMs = Prefs.MAX_DURATION_MS.toLong()
     private var hasPending = false
     private var onCleared: (() -> Unit)? = null
@@ -54,7 +53,7 @@ class GlyphClock private constructor(context: Context) {
                 gm.register(deviceTarget())
                 connected = true
                 Log.d(TAG, "Glyph service connected")
-                if (hasPending) draw(pendingDurationMs, pendingBrightness)
+                if (hasPending) draw(pendingDurationMs)
             } catch (t: Throwable) {
                 Log.e(TAG, "register failed", t)
             }
@@ -84,17 +83,16 @@ class GlyphClock private constructor(context: Context) {
      * @param onCleared invoked on the main thread once the matrix is cleared
      *   (used by short-lived callers to release their keep-alive).
      */
-    fun showTime(durationMs: Long, brightness: Int, onCleared: (() -> Unit)? = null) {
+    fun showTime(durationMs: Long, onCleared: (() -> Unit)? = null) {
         main.post {
             pendingDurationMs = durationMs
-            pendingBrightness = brightness
             this.onCleared = onCleared
             hasPending = true
-            if (connected) draw(durationMs, brightness) else connect()
+            if (connected) draw(durationMs) else connect()
         }
     }
 
-    private fun draw(durationMs: Long, brightness: Int) {
+    private fun draw(durationMs: Long) {
         val gm = manager ?: return
         hasPending = false
         try {
@@ -109,12 +107,14 @@ class GlyphClock private constructor(context: Context) {
                 matrixLen = len,
                 notifications = notifications,
             )
+            // Render at full object brightness and let the system Glyph
+            // brightness setting (including adaptive) govern the actual output.
             val obj = GlyphMatrixObject.Builder()
                 .setImageSource(bmp)
                 .setScale(100)
                 .setOrientation(0)
                 .setPosition(0, 0)
-                .setBrightness(brightness.coerceIn(1, 255))
+                .setBrightness(FULL_BRIGHTNESS)
                 .setReverse(false)
                 .build()
             val frame = GlyphMatrixFrame.Builder()
@@ -199,6 +199,7 @@ class GlyphClock private constructor(context: Context) {
 
     companion object {
         private const val TAG = "GlyphClock"
+        private const val FULL_BRIGHTNESS = 255
 
         @Volatile
         private var instance: GlyphClock? = null

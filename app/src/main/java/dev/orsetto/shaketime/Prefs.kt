@@ -33,11 +33,6 @@ class Prefs(context: Context) {
         get() = sp.getInt(KEY_DURATION, DEFAULT_DURATION).coerceIn(0, 100)
         set(value) = sp.edit().putInt(KEY_DURATION, value.coerceIn(0, 100)).apply()
 
-    /** LED brightness 1..255. */
-    var brightness: Int
-        get() = sp.getInt(KEY_BRIGHTNESS, DEFAULT_BRIGHTNESS).coerceIn(1, 255)
-        set(value) = sp.edit().putInt(KEY_BRIGHTNESS, value.coerceIn(1, 255)).apply()
-
     /** Whether to overlay the notification count as a binary indicator. */
     var notificationIndicatorEnabled: Boolean
         get() = sp.getBoolean(KEY_NOTIF_ENABLED, false)
@@ -74,7 +69,6 @@ class Prefs(context: Context) {
         /** No wake lock; only detects while the screen is on; least battery. */
         const val MODE_SCREEN_ON = 2
         private const val KEY_DURATION = "duration"
-        private const val KEY_BRIGHTNESS = "brightness"
         private const val KEY_NOTIF_ENABLED = "notif_enabled"
         private const val KEY_NOTIF_COUNT = "notif_count"
 
@@ -83,7 +77,6 @@ class Prefs(context: Context) {
 
         const val DEFAULT_SENSITIVITY = 65
         const val DEFAULT_DURATION = 40 // ~4.6s within the range below
-        const val DEFAULT_BRIGHTNESS = 220
 
         const val MIN_DURATION_MS = 1500
         const val MAX_DURATION_MS = 10_000

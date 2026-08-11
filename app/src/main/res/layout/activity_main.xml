@@ -108,19 +108,6 @@
             android:layout_height="wrap_content"
             android:max="100" />
 
-        <TextView
-            android:id="@+id/label_brightness"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textSize="15sp" />
-
-        <SeekBar
-            android:id="@+id/seek_brightness"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="255" />
-
         <Switch
             android:id="@+id/switch_notif"
             android:layout_width="match_parent"

@@ -27,6 +27,6 @@ class TriggerReceiver : BroadcastReceiver() {
 
         val pending = goAsync()
         GlyphClock.getInstance(context)
-            .showTime(duration, prefs.brightness, onCleared = { pending.finish() })
+            .showTime(duration, onCleared = { pending.finish() })
     }
 }

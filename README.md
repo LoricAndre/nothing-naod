@@ -65,7 +65,10 @@ e.g. `--el duration_ms 3000`.
 
 - **Display duration** — 1.5 s to 10 s.
 - **Shake sensitivity** — higher means a gentler shake triggers it.
-- **Brightness** — 1–255 LED brightness.
+
+Brightness is not set by the app — the time is drawn at full and the **system
+Glyph Interface brightness** (Settings → Glyph Interface, including adaptive)
+governs the actual LED brightness.
 - **Show unread count on Glyph** — overlays the notification count on the four
   right-hand pixels as a binary counter (top = 8, then 4, 2, bottom = 1; capped
   at 15). Set bits are full brightness; unset bits stay dimly lit so all four

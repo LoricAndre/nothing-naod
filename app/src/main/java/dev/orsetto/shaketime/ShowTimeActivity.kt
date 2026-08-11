@@ -22,7 +22,7 @@ class ShowTimeActivity : Activity() {
         val override = intent?.getLongExtra(Actions.EXTRA_DURATION_MS, -1L) ?: -1L
         val duration = if (override > 0) override else prefs.durationMs
 
-        GlyphClock.getInstance(this).showTime(duration, prefs.brightness)
+        GlyphClock.getInstance(this).showTime(duration)
         finish()
     }
 }

@@ -18,9 +18,9 @@ import android.widget.TextView
 import android.widget.Toast
 
 /**
- * Settings screen: toggle background monitoring, tune duration / sensitivity /
- * brightness, test the reveal, pin a home-screen shortcut, and read the
- * automation recipe.
+ * Settings screen: toggle background monitoring, tune duration / sensitivity,
+ * test the reveal, pin a home-screen shortcut, and read the automation recipe.
+ * Glyph brightness follows the system Glyph Interface setting.
  */
 class MainActivity : android.app.Activity() {
 
@@ -30,7 +30,6 @@ class MainActivity : android.app.Activity() {
     private lateinit var notifSwitch: Switch
     private lateinit var durationLabel: TextView
     private lateinit var sensitivityLabel: TextView
-    private lateinit var brightnessLabel: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,14 +40,12 @@ class MainActivity : android.app.Activity() {
         notifSwitch = findViewById(R.id.switch_notif)
         durationLabel = findViewById(R.id.label_duration)
         sensitivityLabel = findViewById(R.id.label_sensitivity)
-        brightnessLabel = findViewById(R.id.label_brightness)
 
         setupMonitorSwitch()
         setupModeSelector()
         setupShowNow()
         setupDuration()
         setupSensitivity()
-        setupBrightness()
         setupNotificationIndicator()
         setupPinShortcut()
     }
@@ -95,7 +92,7 @@ class MainActivity : android.app.Activity() {
     private fun setupShowNow() {
         findViewById<Button>(R.id.btn_show_now).setOnClickListener {
             // In-app and foreground, so we can drive the Glyph directly.
-            GlyphClock.getInstance(this).showTime(prefs.durationMs, prefs.brightness)
+            GlyphClock.getInstance(this).showTime(prefs.durationMs)
             Toast.makeText(this, R.string.shown_toast, Toast.LENGTH_SHORT).show()
         }
     }
@@ -120,18 +117,6 @@ class MainActivity : android.app.Activity() {
             override fun onProgressChanged(sb: SeekBar, p: Int, fromUser: Boolean) {
                 prefs.sensitivity = p
                 updateSensitivityLabel()
-            }
-        })
-    }
-
-    private fun setupBrightness() {
-        val seek = findViewById<SeekBar>(R.id.seek_brightness)
-        seek.progress = prefs.brightness
-        updateBrightnessLabel()
-        seek.setOnSeekBarChangeListener(object : SimpleSeekListener() {
-            override fun onProgressChanged(sb: SeekBar, p: Int, fromUser: Boolean) {
-                prefs.brightness = p.coerceAtLeast(1)
-                updateBrightnessLabel()
             }
         })
     }
@@ -189,10 +174,6 @@ class MainActivity : android.app.Activity() {
 
     private fun updateSensitivityLabel() {
         sensitivityLabel.text = getString(R.string.sensitivity_fmt, prefs.sensitivity)
-    }
-
-    private fun updateBrightnessLabel() {
-        brightnessLabel.text = getString(R.string.brightness_fmt, prefs.brightness)
     }
 
     private fun ensureNotificationPermission() {

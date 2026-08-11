@@ -100,7 +100,7 @@ class ShakeMonitorService : Service() {
     private fun reveal() {
         val duration = prefs.durationMs
         revealWakeLock.acquire(duration + WAKELOCK_MARGIN_MS)
-        glyphClock.showTime(duration, prefs.brightness) {
+        glyphClock.showTime(duration) {
             if (revealWakeLock.isHeld) revealWakeLock.release()
         }
     }
