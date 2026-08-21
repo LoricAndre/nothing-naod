@@ -41,9 +41,23 @@ class Prefs(context: Context) {
         get() = sp.getBoolean(KEY_NOTIF_REVEAL, false)
         set(value) = sp.edit().putBoolean(KEY_NOTIF_REVEAL, value).apply()
 
+    /** Slider value 0..100 mapped to [MIN_REVEAL_MS]..[MAX_REVEAL_MS]. */
+    var notificationRevealSlider: Int
+        get() = sp.getInt(KEY_NOTIF_REVEAL_MS, DEFAULT_NOTIF_REVEAL).coerceIn(0, 100)
+        set(value) = sp.edit().putInt(KEY_NOTIF_REVEAL_MS, value.coerceIn(0, 100)).apply()
+
     /** How long to show a notification icon, in milliseconds. */
     val notificationRevealMs: Long
-        get() = NOTIF_REVEAL_MS
+        get() = (MIN_REVEAL_MS + (MAX_REVEAL_MS - MIN_REVEAL_MS) *
+            notificationRevealSlider / 100).toLong()
+
+    /**
+     * When true, always draw the notifying app's launcher icon (preferring its
+     * monochrome layer) instead of the icon carried by the notification.
+     */
+    var useAppIconForNotifications: Boolean
+        get() = sp.getBoolean(KEY_NOTIF_APP_ICON, false)
+        set(value) = sp.edit().putBoolean(KEY_NOTIF_APP_ICON, value).apply()
 
     /** Whether to overlay the notification count as a binary indicator. */
     var notificationIndicatorEnabled: Boolean
@@ -83,9 +97,14 @@ class Prefs(context: Context) {
         private const val KEY_DURATION = "duration"
         private const val KEY_NOTIF_ENABLED = "notif_enabled"
         private const val KEY_NOTIF_REVEAL = "notif_reveal"
+        private const val KEY_NOTIF_REVEAL_MS = "notif_reveal_ms"
+        private const val KEY_NOTIF_APP_ICON = "notif_app_icon"
 
-        /** Icon flash duration; short so it reads as a glance, not a takeover. */
-        const val NOTIF_REVEAL_MS = 3000L
+        /** ~3 s within the range below: a glance, not a takeover. */
+        const val DEFAULT_NOTIF_REVEAL = 29
+
+        const val MIN_REVEAL_MS = 1000
+        const val MAX_REVEAL_MS = 8000
         private const val KEY_NOTIF_COUNT = "notif_count"
 
         /** 4-bit indicator maxes out at 15. */

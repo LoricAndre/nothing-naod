@@ -3,6 +3,7 @@ package dev.orsetto.shaketime
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -23,6 +24,14 @@ object NotificationIconRenderer {
 
     /** Coverage below this fraction of the peak is treated as unlit. */
     private const val NOISE_FLOOR = 0.28f
+
+    /**
+     * Returns an adaptive icon's monochrome layer when it has one, otherwise the
+     * drawable unchanged. Launcher icons are colourful and detailed; their
+     * monochrome layer is a flat silhouette, which is far more legible on LEDs.
+     */
+    fun preferMonochrome(drawable: Drawable): Drawable =
+        (drawable as? AdaptiveIconDrawable)?.monochrome ?: drawable
 
     /**
      * @param drawable the notification's small icon (or the app icon)

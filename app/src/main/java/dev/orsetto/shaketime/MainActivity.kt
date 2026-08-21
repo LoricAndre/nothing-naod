@@ -29,8 +29,10 @@ class MainActivity : android.app.Activity() {
     private lateinit var monitorSwitch: Switch
     private lateinit var notifSwitch: Switch
     private lateinit var notifRevealSwitch: Switch
+    private lateinit var appIconSwitch: Switch
     private lateinit var durationLabel: TextView
     private lateinit var sensitivityLabel: TextView
+    private lateinit var notifDurationLabel: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,8 +42,10 @@ class MainActivity : android.app.Activity() {
         monitorSwitch = findViewById(R.id.switch_monitor)
         notifSwitch = findViewById(R.id.switch_notif)
         notifRevealSwitch = findViewById(R.id.switch_notif_reveal)
+        appIconSwitch = findViewById(R.id.switch_app_icon)
         durationLabel = findViewById(R.id.label_duration)
         sensitivityLabel = findViewById(R.id.label_sensitivity)
+        notifDurationLabel = findViewById(R.id.label_notif_duration)
 
         setupMonitorSwitch()
         setupModeSelector()
@@ -142,9 +146,30 @@ class MainActivity : android.app.Activity() {
             set = { prefs.notificationIndicatorEnabled = it },
         )
 
+        // Icon source needs no notification access of its own.
+        appIconSwitch.isChecked = prefs.useAppIconForNotifications
+        appIconSwitch.setOnCheckedChangeListener { _, checked ->
+            prefs.useAppIconForNotifications = checked
+        }
+
+        val seek = findViewById<SeekBar>(R.id.seek_notif_duration)
+        seek.progress = prefs.notificationRevealSlider
+        updateNotifDurationLabel()
+        seek.setOnSeekBarChangeListener(object : SimpleSeekListener() {
+            override fun onProgressChanged(sb: SeekBar, p: Int, fromUser: Boolean) {
+                prefs.notificationRevealSlider = p
+                updateNotifDurationLabel()
+            }
+        })
+
         findViewById<Button>(R.id.btn_notif_access).setOnClickListener {
             openNotificationAccessSettings()
         }
+    }
+
+    private fun updateNotifDurationLabel() {
+        notifDurationLabel.text =
+            getString(R.string.notif_reveal_duration_fmt, prefs.notificationRevealMs / 1000f)
     }
 
     /**

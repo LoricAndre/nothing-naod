@@ -2,6 +2,7 @@ package dev.orsetto.shaketime
 
 import android.app.Notification
 import android.app.NotificationManager
+import android.graphics.drawable.Drawable
 import android.os.PowerManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.NotificationListenerService.Ranking
@@ -87,12 +88,30 @@ class NotificationCountService : NotificationListenerService() {
         }
     }
 
-    /** The notification's small icon, falling back to the app's launcher icon. */
-    private fun loadIcon(sbn: StatusBarNotification) = try {
-        sbn.notification.smallIcon?.loadDrawable(this)
-            ?: packageManager.getApplicationIcon(sbn.packageName)
+    /**
+     * The icon to draw for [sbn].
+     *
+     * By default this is the notification's small icon — apps set that to their
+     * own monochrome badge, so it stays legible on the matrix. When the user
+     * prefers the app icon (e.g. because an app puts per-conversation artwork in
+     * its notifications), the launcher icon is used instead, preferring its
+     * monochrome layer.
+     */
+    private fun loadIcon(sbn: StatusBarNotification): Drawable? = try {
+        if (prefs.useAppIconForNotifications) {
+            appIcon(sbn.packageName) ?: sbn.notification.smallIcon?.loadDrawable(this)
+        } else {
+            sbn.notification.smallIcon?.loadDrawable(this) ?: appIcon(sbn.packageName)
+        }
     } catch (t: Throwable) {
         Log.w(TAG, "icon load failed for ${sbn.packageName}", t)
+        null
+    }
+
+    private fun appIcon(packageName: String): Drawable? = try {
+        NotificationIconRenderer.preferMonochrome(packageManager.getApplicationIcon(packageName))
+    } catch (t: Throwable) {
+        Log.w(TAG, "app icon unavailable for $packageName", t)
         null
     }
 

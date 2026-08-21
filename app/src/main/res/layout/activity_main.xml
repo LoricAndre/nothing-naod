@@ -123,6 +123,34 @@
             android:text="@string/notif_reveal_hint"
             android:textSize="13sp" />
 
+        <TextView
+            android:id="@+id/label_notif_duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="15sp" />
+
+        <SeekBar
+            android:id="@+id/seek_notif_duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <Switch
+            android:id="@+id/switch_app_icon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="48dp"
+            android:text="@string/notif_app_icon_label"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/notif_app_icon_hint"
+            android:textSize="13sp" />
+
         <Switch
             android:id="@+id/switch_notif"
             android:layout_width="match_parent"

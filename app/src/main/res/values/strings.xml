@@ -18,6 +18,9 @@
 
     <string name="notif_reveal_label">Flash icon on new notification</string>
     <string name="notif_reveal_hint">When a notification arrives while the phone is face-down, briefly shows the app\'s icon on the Glyph Matrix. Silent and ongoing notifications are ignored.</string>
+    <string name="notif_reveal_duration_fmt">Icon duration: %.1f s</string>
+    <string name="notif_app_icon_label">Always use the app\'s icon</string>
+    <string name="notif_app_icon_hint">Uses the app\'s launcher icon (monochrome layer when available) instead of the icon carried by the notification. Helps when an app puts detailed artwork, such as a contact photo, in its notifications.</string>
 
     <string name="notif_count_label">Show unread count on Glyph</string>
     <string name="notif_count_hint">Lights the four right-hand pixels as a binary counter (top = 8 … bottom = 1, capped at 15). Requires notification access.</string>
