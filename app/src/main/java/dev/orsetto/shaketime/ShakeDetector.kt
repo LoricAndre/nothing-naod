@@ -3,7 +3,6 @@ package dev.orsetto.shaketime
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
-import kotlin.math.abs
 import kotlin.math.sqrt
 
 /**
@@ -46,8 +45,7 @@ class ShakeDetector(
 
         // Face-down: gravity vector points into the screen (Z clearly negative)
         // and the phone lies roughly flat (X/Y gravity small).
-        val faceDown = gravity[2] < FACE_DOWN_Z &&
-            abs(gravity[0]) < FLAT_XY && abs(gravity[1]) < FLAT_XY
+        val faceDown = FaceDown.isFaceDown(gravity[0], gravity[1], gravity[2])
         if (!faceDown) {
             joltCount = 0
             return
@@ -85,10 +83,6 @@ class ShakeDetector(
 
     private companion object {
         const val ALPHA = 0.8f
-
-        // ~ -9.8 when perfectly face-down; -6 allows ~52 degrees of tilt.
-        const val FACE_DOWN_Z = -6f
-        const val FLAT_XY = 7f
 
         const val REQUIRED_JOLTS = 2
         const val SHAKE_WINDOW_MS = 1200L

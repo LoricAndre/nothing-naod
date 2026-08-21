@@ -69,6 +69,11 @@ e.g. `--el duration_ms 3000`.
 Brightness is not set by the app — the time is drawn at full and the **system
 Glyph Interface brightness** (Settings → Glyph Interface, including adaptive)
 governs the actual LED brightness.
+- **Flash icon on new notification** — when a notification arrives while the
+  phone is lying face-down, briefly shows that app's icon on the Glyph Matrix
+  (~3 s). The icon is rendered as a silhouette sized to the matrix. Repeats of
+  the same notification and rapid bursts are suppressed. Requires Notification
+  access; works whether or not the shake monitor is running.
 - **Show unread count on Glyph** — overlays the notification count on the four
   right-hand pixels as a binary counter (top = 8, then 4, 2, bottom = 1; capped
   at 15). Set bits are full brightness; unset bits stay dimly lit so all four

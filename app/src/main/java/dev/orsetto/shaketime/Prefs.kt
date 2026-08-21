@@ -33,6 +33,18 @@ class Prefs(context: Context) {
         get() = sp.getInt(KEY_DURATION, DEFAULT_DURATION).coerceIn(0, 100)
         set(value) = sp.edit().putInt(KEY_DURATION, value.coerceIn(0, 100)).apply()
 
+    /**
+     * Whether to flash a notification's icon on the Glyph when it arrives while
+     * the phone is face-down.
+     */
+    var notificationRevealEnabled: Boolean
+        get() = sp.getBoolean(KEY_NOTIF_REVEAL, false)
+        set(value) = sp.edit().putBoolean(KEY_NOTIF_REVEAL, value).apply()
+
+    /** How long to show a notification icon, in milliseconds. */
+    val notificationRevealMs: Long
+        get() = NOTIF_REVEAL_MS
+
     /** Whether to overlay the notification count as a binary indicator. */
     var notificationIndicatorEnabled: Boolean
         get() = sp.getBoolean(KEY_NOTIF_ENABLED, false)
@@ -70,6 +82,10 @@ class Prefs(context: Context) {
         const val MODE_SCREEN_ON = 2
         private const val KEY_DURATION = "duration"
         private const val KEY_NOTIF_ENABLED = "notif_enabled"
+        private const val KEY_NOTIF_REVEAL = "notif_reveal"
+
+        /** Icon flash duration; short so it reads as a glance, not a takeover. */
+        const val NOTIF_REVEAL_MS = 3000L
         private const val KEY_NOTIF_COUNT = "notif_count"
 
         /** 4-bit indicator maxes out at 15. */

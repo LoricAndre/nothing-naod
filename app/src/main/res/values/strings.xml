@@ -16,6 +16,9 @@
     <string name="duration_fmt">Display duration: %.1f s</string>
     <string name="sensitivity_fmt">Shake sensitivity: %1$d / 100</string>
 
+    <string name="notif_reveal_label">Flash icon on new notification</string>
+    <string name="notif_reveal_hint">When a notification arrives while the phone is face-down, briefly shows the app\'s icon on the Glyph Matrix. Silent and ongoing notifications are ignored.</string>
+
     <string name="notif_count_label">Show unread count on Glyph</string>
     <string name="notif_count_hint">Lights the four right-hand pixels as a binary counter (top = 8 … bottom = 1, capped at 15). Requires notification access.</string>
     <string name="notif_access">Grant notification access</string>

@@ -28,6 +28,7 @@ class MainActivity : android.app.Activity() {
 
     private lateinit var monitorSwitch: Switch
     private lateinit var notifSwitch: Switch
+    private lateinit var notifRevealSwitch: Switch
     private lateinit var durationLabel: TextView
     private lateinit var sensitivityLabel: TextView
 
@@ -38,6 +39,7 @@ class MainActivity : android.app.Activity() {
 
         monitorSwitch = findViewById(R.id.switch_monitor)
         notifSwitch = findViewById(R.id.switch_notif)
+        notifRevealSwitch = findViewById(R.id.switch_notif_reveal)
         durationLabel = findViewById(R.id.label_duration)
         sensitivityLabel = findViewById(R.id.label_sensitivity)
 
@@ -54,7 +56,9 @@ class MainActivity : android.app.Activity() {
         super.onResume()
         monitorSwitch.isChecked = prefs.monitoringEnabled
         // Access may have been granted/revoked in system settings while away.
-        notifSwitch.isChecked = prefs.notificationIndicatorEnabled && isNotificationAccessGranted()
+        val access = isNotificationAccessGranted()
+        notifSwitch.isChecked = prefs.notificationIndicatorEnabled && access
+        notifRevealSwitch.isChecked = prefs.notificationRevealEnabled && access
     }
 
     private fun setupMonitorSwitch() {
@@ -122,20 +126,47 @@ class MainActivity : android.app.Activity() {
     }
 
     private fun setupNotificationIndicator() {
-        notifSwitch.isChecked = prefs.notificationIndicatorEnabled && isNotificationAccessGranted()
-        notifSwitch.setOnCheckedChangeListener { _, checked ->
-            if (checked && !isNotificationAccessGranted()) {
-                Toast.makeText(this, R.string.notif_access_needed, Toast.LENGTH_LONG).show()
-                openNotificationAccessSettings()
-                notifSwitch.isChecked = false
-                prefs.notificationIndicatorEnabled = false
-                return@setOnCheckedChangeListener
-            }
-            prefs.notificationIndicatorEnabled = checked
-        }
+        val access = isNotificationAccessGranted()
+
+        notifRevealSwitch.isChecked = prefs.notificationRevealEnabled && access
+        bindNotificationSwitch(
+            notifRevealSwitch,
+            get = { prefs.notificationRevealEnabled },
+            set = { prefs.notificationRevealEnabled = it },
+        )
+
+        notifSwitch.isChecked = prefs.notificationIndicatorEnabled && access
+        bindNotificationSwitch(
+            notifSwitch,
+            get = { prefs.notificationIndicatorEnabled },
+            set = { prefs.notificationIndicatorEnabled = it },
+        )
+
         findViewById<Button>(R.id.btn_notif_access).setOnClickListener {
             openNotificationAccessSettings()
         }
+    }
+
+    /**
+     * Wires a switch that requires notification access: turning it on without
+     * access sends the user to system settings and reverts the toggle.
+     */
+    private fun bindNotificationSwitch(
+        switch: Switch,
+        get: () -> Boolean,
+        set: (Boolean) -> Unit,
+    ) {
+        switch.setOnCheckedChangeListener { _, checked ->
+            if (checked && !isNotificationAccessGranted()) {
+                Toast.makeText(this, R.string.notif_access_needed, Toast.LENGTH_LONG).show()
+                openNotificationAccessSettings()
+                set(false)
+                switch.isChecked = false
+                return@setOnCheckedChangeListener
+            }
+            set(checked)
+        }
+        switch.isChecked = get() && isNotificationAccessGranted()
     }
 
     private fun isNotificationAccessGranted(): Boolean {

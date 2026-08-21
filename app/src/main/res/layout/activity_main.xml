@@ -109,10 +109,25 @@
             android:max="100" />
 
         <Switch
-            android:id="@+id/switch_notif"
+            android:id="@+id/switch_notif_reveal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:minHeight="48dp"
+            android:text="@string/notif_reveal_label"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/notif_reveal_hint"
+            android:textSize="13sp" />
+
+        <Switch
+            android:id="@+id/switch_notif"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:minHeight="48dp"
             android:text="@string/notif_count_label"
             android:textSize="18sp" />

@@ -2,6 +2,7 @@ package dev.orsetto.shaketime
 
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.text.format.DateFormat
@@ -44,6 +45,9 @@ class GlyphClock private constructor(context: Context) {
     private var hasPending = false
     private var onCleared: (() -> Unit)? = null
 
+    /** When set, [draw] shows this bitmap instead of rendering the time. */
+    private var pendingBitmap: Bitmap? = null
+
     private val clearRunnable = Runnable { onClearTimeout() }
 
     private val callback = object : GlyphMatrixManager.Callback {
@@ -84,29 +88,49 @@ class GlyphClock private constructor(context: Context) {
      *   (used by short-lived callers to release their keep-alive).
      */
     fun showTime(durationMs: Long, onCleared: (() -> Unit)? = null) {
+        show(durationMs, null, onCleared)
+    }
+
+    /**
+     * Show an arbitrary matrix-sized [bitmap] for [durationMs], then clear.
+     * Used for the notification-icon reveal.
+     */
+    fun showBitmap(bitmap: Bitmap, durationMs: Long, onCleared: (() -> Unit)? = null) {
+        show(durationMs, bitmap, onCleared)
+    }
+
+    private fun show(durationMs: Long, bitmap: Bitmap?, onCleared: (() -> Unit)?) {
         main.post {
             pendingDurationMs = durationMs
+            pendingBitmap = bitmap
             this.onCleared = onCleared
             hasPending = true
             if (connected) draw(durationMs) else connect()
         }
     }
 
+    /** The matrix side length in LEDs, for callers that pre-render a bitmap. */
+    fun matrixSize(): Int = matrixLength()
+
     private fun draw(durationMs: Long) {
         val gm = manager ?: return
         hasPending = false
         try {
             val len = matrixLength()
-            val now = Calendar.getInstance()
-            val notifications =
-                if (prefs.notificationIndicatorEnabled) prefs.notificationCount else -1
-            val bmp = TimeMatrixRenderer.render(
-                hour24 = now.get(Calendar.HOUR_OF_DAY),
-                minute = now.get(Calendar.MINUTE),
-                use24h = DateFormat.is24HourFormat(appContext),
-                matrixLen = len,
-                notifications = notifications,
-            )
+            val supplied = pendingBitmap
+            pendingBitmap = null
+            val bmp = supplied ?: run {
+                val now = Calendar.getInstance()
+                val notifications =
+                    if (prefs.notificationIndicatorEnabled) prefs.notificationCount else -1
+                TimeMatrixRenderer.render(
+                    hour24 = now.get(Calendar.HOUR_OF_DAY),
+                    minute = now.get(Calendar.MINUTE),
+                    use24h = DateFormat.is24HourFormat(appContext),
+                    matrixLen = len,
+                    notifications = notifications,
+                )
+            }
             // Render at full object brightness and let the system Glyph
             // brightness setting (including adaptive) govern the actual output.
             val obj = GlyphMatrixObject.Builder()
@@ -172,6 +196,7 @@ class GlyphClock private constructor(context: Context) {
         manager = null
         connected = false
         hasPending = false
+        pendingBitmap = null
     }
 
     private fun deviceTarget(): String = try {
